@@ -5098,6 +5098,6 @@ int32_t nematode_app(void* p) {
     createPostSynaptic();
     while(true) {
         update();
-        FURI_LOG_I("accumLeft: %d, accumRight: %d", accumLeft, accumRight);
+        FURI_LOG_I(TAG, "accumLeft: %d, accumRight: %d", accumLeft, accumRight);
     }
 }
