@@ -1,2 +1,2 @@
 # f0-wormbrain
-C. Elegant nematode on the Flipper Zero.
+C. Elegans nematode on the Flipper Zero.

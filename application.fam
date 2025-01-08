@@ -1,0 +1,17 @@
+# For details & more options, see documentation/AppManifests.md in firmware repo
+
+App(
+    appid="nematode",  # Must be unique
+    name="Worm Brain",  # Displayed in UI
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="nematode_app",
+    stack_size=2 * 1024,
+    requires=["gui"],
+    fap_category="Tools",
+    # Optional values
+    fap_description="C. Elegans nematode on the Flipper Zero.",
+    fap_version="1.0",  # (major, minor)
+    # fap_icon="demo_app.png",  # 10x10 1-bit PNG
+    fap_author="zap8600",
+    fap_weburl="https://github.com/zap8600/f0-wormbrain",
+)
