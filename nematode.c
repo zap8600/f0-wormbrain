@@ -1,4 +1,7 @@
 #include <furi.h>
+#include <gui/gui.h>
+#include <input/input.h>
+
 #include <math.h>
 #include <stdint.h>
 #include <stdbool.h> 
