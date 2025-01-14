@@ -5097,11 +5097,66 @@ void update() {
 
 #define TAG "NEMATODE"
 
+typedef enum {
+    EventTypeTick,
+    EventTypeKey,
+} EventType;
+
+typedef struct {
+    EventType type;
+    InputEvent input;
+} PluginEvent;
+
+static void input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
+    furi_assert(event_queue); 
+
+    PluginEvent event = {.type = EventTypeKey, .input = *input_event};
+    furi_message_queue_put(event_queue, &event, FuriWaitForever);
+}
+
+static void render_callback(Canvas* const canvas, void* ctx) {
+    // Draw worm
+}
+
 int32_t nematode_app(void* p) {
     UNUSED(p);
+
+    FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(PluginEvent));
+
+    ViewPort* view_port = view_port_alloc();
+    view_port_draw_callback_set(view_port, render_callback, NULL);
+    view_port_input_callback_set(view_port, input_callback, event_queue);
+
+    Gui* gui = furi_record_open("gui"); 
+    gui_add_view_port(gui, view_port, GuiLayerFullscreen); 
+
     createPostSynaptic();
-    while(true) {
+
+    PluginEvent event; 
+    for(bool processing = true; processing;) { 
+        FuriStatus event_status = furi_message_queue_put(event_queue, &event, 100);
+
+        if(event_status == FuriStatusOK) {
+            if(event.type == EventTypeKey) {
+                if(event.input.type == InputTypePress) {  
+                    switch(event.input.key) {
+                    case InputKeyUp:   
+                    case InputKeyDown:   
+                    case InputKeyRight:   
+                    case InputKeyLeft:   
+                    case InputKeyOk: 
+                    case InputKeyBack: 
+                        processing = false;
+                        break;
+                    }
+                }
+            } 
+        } else {
+            FURI_LOG_D(TAG, "Event Timeout");
+        }
+
         update();
         FURI_LOG_I(TAG, "accumLeft: %d, accumRight: %d", accumLeft, accumRight);
+        view_port_update(view_port); 
     }
 }
