@@ -5112,7 +5112,7 @@ void updateWormScreen() {
     float newDir = ((float)(accumLeft - accumRight)) / scalingFactor;
     targetDir = facingDir + (newDir * PI);
 
-    targetSpeed = (fabs((float)accumLeft) + fabs((float)accumRight)) / (scalingFactor * 5);
+    targetSpeed = (fabsf((float)accumLeft) + fabsf((float)accumRight)) / (scalingFactor * 5);
 
     speedChangeInterval = (targetSpeed - speed) / (scalingFactor * 1.5f);
     furi_mutex_free(math_mutex);
