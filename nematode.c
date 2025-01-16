@@ -5095,6 +5095,29 @@ void update() {
     }
 }
 
+float facingDir = 0.0f;
+float targetDir = 0.0f;
+float speed = 0.0f;
+float target speed = 0.0f;
+float speedChangeInterval = 0.0f;
+
+#define PI 3.14159265359f
+
+const float scalingFactor = 20.0f; // TODO: Find a value for this that works well for the Flipper Zero screen
+
+FuriMutex* math_mutex;
+
+void updateWormScreen() {
+    furi_mutex_acquire(math_mutex, FuriWaitForever);
+    float newDir = ((float)(accumLeft - accumRight)) / scalingFactor;
+    targetDir = facingDir + (newDir * PI);
+
+    targetSpeed = (fabs((float)accumLeft) + fabs((float)accumRight)) / (scalingFactor * 5);
+
+    speedChangeInterval = (targetSpeed - speed) / (scalingFactor * 1.5f);
+    furi_mutex_free(math_mutex);
+}
+
 #define TAG "NEMATODE"
 
 typedef enum {
@@ -5107,15 +5130,45 @@ typedef struct {
     InputEvent input;
 } PluginEvent;
 
-static void input_callback(InputEvent* input_event, FuriMessageQueue* event_queue) {
+static void input_callback(InputEvent* input_event, void* event_queue) {
     furi_assert(event_queue); 
 
     PluginEvent event = {.type = EventTypeKey, .input = *input_event};
     furi_message_queue_put(event_queue, &event, FuriWaitForever);
 }
 
+float x = 0.0f;
+float y = 0.0f;
+
 static void render_callback(Canvas* const canvas, void* ctx) {
-    // Draw worm
+    UNUSED(ctx);
+    furi_mutex_acquire(math_mutex, FuriWaitForever);
+
+    speed += speedChangeInterval;
+
+    float facingMinusTarget = facingDir - targetDir;
+    float angleDiff = facingMinusTarget;
+
+    if(fabs(facingMinusTarget) > 180) {
+        if(facingDir > targetDir) {
+            angleDiff = -1 * (360.0f - (facingDir + targetDir));
+        } else {
+            angleDiff = 360.0f - (targetDir + facingDir);
+        }
+    }
+
+    if(angleDiff > 0) {
+        facingDir -= 0.1;
+    } else if(angleDiff < 0) {
+        facingDir += 0.1;
+    }
+
+    x += cosf(facingDir) * speed;
+    y -= sinf(facingDir) * speed;
+
+    
+
+    furi_mutex_free(math_mutex);
 }
 
 int32_t nematode_app(void* p) {
@@ -5124,7 +5177,7 @@ int32_t nematode_app(void* p) {
     FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(PluginEvent));
 
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, render_callback, NULL);
+    view_port_draw_callback_set(view_port, render_callback);
     view_port_input_callback_set(view_port, input_callback, event_queue);
 
     Gui* gui = furi_record_open("gui"); 
@@ -5136,7 +5189,7 @@ int32_t nematode_app(void* p) {
     for(bool processing = true; processing;) { 
         FuriStatus event_status = furi_message_queue_put(event_queue, &event, 100);
 
-        if(event_status == FuriStatusOK) {
+        if(event_status == FuriStatusOk) {
             if(event.type == EventTypeKey) {
                 if(event.input.type == InputTypePress) {  
                     switch(event.input.key) {
@@ -5159,4 +5212,5 @@ int32_t nematode_app(void* p) {
         FURI_LOG_I(TAG, "accumLeft: %d, accumRight: %d", accumLeft, accumRight);
         view_port_update(view_port); 
     }
+    return 0;
 }
