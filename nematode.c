@@ -5166,7 +5166,7 @@ static void render_callback(Canvas* const canvas, void* ctx) {
     x += cosf(facingDir) * speed;
     y -= sinf(facingDir) * speed;
 
-    
+    canvas_draw_dot(canvas, (int32_t)(roundf(x)), (int32_t)(roundf(y)));
 
     furi_mutex_free(math_mutex);
 }
@@ -5196,8 +5196,13 @@ int32_t nematode_app(void* p) {
                     case InputKeyUp:   
                     case InputKeyDown:   
                     case InputKeyRight:   
-                    case InputKeyLeft:   
-                    case InputKeyOk: 
+                    case InputKeyLeft:
+                    case InputKeyMAX: // What is MAX?
+                        break;   
+                    case InputKeyOk:
+                        x = 0.0f;
+                        y = 0.0f;
+                        break; 
                     case InputKeyBack: 
                         processing = false;
                         break;
@@ -5210,6 +5215,7 @@ int32_t nematode_app(void* p) {
 
         update();
         FURI_LOG_I(TAG, "accumLeft: %d, accumRight: %d", accumLeft, accumRight);
+        updateWormScreen();
         view_port_update(view_port); 
     }
     return 0;
