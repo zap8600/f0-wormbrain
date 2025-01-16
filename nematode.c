@@ -5098,7 +5098,7 @@ void update() {
 float facingDir = 0.0f;
 float targetDir = 0.0f;
 float speed = 0.0f;
-float target speed = 0.0f;
+float targetSpeed = 0.0f;
 float speedChangeInterval = 0.0f;
 
 #define PI 3.14159265359f
@@ -5177,7 +5177,7 @@ int32_t nematode_app(void* p) {
     FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(PluginEvent));
 
     ViewPort* view_port = view_port_alloc();
-    view_port_draw_callback_set(view_port, render_callback);
+    view_port_draw_callback_set(view_port, render_callback, NULL);
     view_port_input_callback_set(view_port, input_callback, event_queue);
 
     Gui* gui = furi_record_open("gui"); 
